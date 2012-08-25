@@ -1,0 +1,28 @@
+{
+	"name": "Neerslagalarm",
+	"version": "0.37.1",
+
+	"description": "Met Neerslagalarm weet je in een paar seconden of én hoeveel neerslag er gaat vallen.",
+
+	"icons": {
+		"16": "icon16.png",
+		"48": "icon48.png",
+		"128": "icon128.png"
+	},
+
+	"background_page": "background.html",
+	"browser_action": {
+		"default_icon": "icon48.png",
+		"popup": "popup.html"
+	},
+
+	"options_page": "options.html",
+	"permissions": [
+		"http://gps.buienradar.nl/*",
+		"http://api.wunderground.com/*",
+		"https://www.google.com/jsapi",
+		"http://maps.googleapis.com/*",
+		"geolocation",
+		"notifications"
+	]
+}

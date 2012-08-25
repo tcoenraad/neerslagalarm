@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Neerslagalarm</title>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" type="image/png" href="icon.png" />
+
+    <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script src="assets/jquery-1.6.4.min.js"></script>
+    <script src="assets/app.js"></script>
+
+    <script>
+	var previousMarker, t, map;
+
+	function setNewMarker(position, map) {
+		if(previousMarker) {
+			previousMarker.setMap(null);
+		}
+
+		marker = new google.maps.Marker({
+			position: new google.maps.LatLng(position[0], position[1]),
+			map: map,
+      title: 'manual'
+		});
+		previousMarker = marker; //pointer to reset on next setter
+	}
+
+	$(function() {
+		//default map, Netherlands
+		latLng = new google.maps.LatLng(52.133488040771496, 5.29541015625); //Netherlands
+		options = {
+			zoom: 7,
+			center: latLng,
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+		};
+		map = new google.maps.Map(document.getElementById('map'), options);
+
+		//restore saved marker
+		if(localStorage['position-lat']) {
+			setNewMarker([localStorage['position-lat'], localStorage['position-lon']], map);
+			map.setCenter(new google.maps.LatLng(localStorage['position-lat'], localStorage['position-lon']));
+		}
+
+    navigator.geolocation.getCurrentPosition( //async
+			function (position) {
+				lat = position.coords.latitude;
+				lon = position.coords.longitude;
+
+        geoMarker = new google.maps.Marker({
+          position: new google.maps.LatLng(lat, lon),
+          map: map,
+          title: 'auto-geo'
+        });
+			}
+    );
+
+		//restore saved states
+		if(localStorage['location'] == 'manual') {
+			$('input[name=location]:eq(1)').attr('checked', true);
+		}
+		if(localStorage['notification'] == 'false') { //localstorage makes this a string, shortest fix
+			$('#form-notification').attr('checked', false);
+		}
+		if(localStorage['notificationInterval']) {
+			$('select[name=notificationInterval] [value="' + localStorage['notificationInterval'] + '"]').attr('selected', true);
+		}
+		if(localStorage['notificationAmount']) {
+			$('select[name=notificationAmount] [value="' + localStorage['notificationAmount'] + '"]').attr('selected', true);
+		}
+		if(localStorage['badgeAmount']) {
+			$('select[name=badgeAmount] [value="' + localStorage['badgeAmount'] + '"]').attr('selected', true);
+		}
+
+		//restore geo values
+		if(localStorage['position-lat']) {
+			$('#lat').val(localStorage['position-lat']);
+			$('#lon').val(localStorage['position-lon']);
+		}
+
+		google.maps.event.addDomListener(map, 'mousedown', function(e) {
+			t = setTimeout(function(){
+				//fill those forms
+				lat = e.latLng.lat();
+				lon = e.latLng.lng(); //lng, not lon
+
+				$('#lat').val(lat);
+				$('#lon').val(lon);
+
+				//give a visible respons
+				setNewMarker([lat, lon], map);
+				map.panTo(new google.maps.LatLng(lat, lon));
+			}, 500);
+		});
+		google.maps.event.addDomListener(map, 'mouseup', function(e) {
+			clearTimeout(t);
+		});
+
+		//event handlers
+		$('#save').click(function() {
+			localStorage['location'] = $('input[name=location]:checked').val();
+			localStorage['notification'] = $('#form-notification').is(':checked');
+			localStorage['notificationInterval'] = $('select[name=notificationInterval] option:selected').val();
+			localStorage['notificationAmount'] = $('select[name=notificationAmount] option:selected').val();
+			localStorage['badgeAmount'] = $('select[name=badgeAmount] option:selected').val();
+
+			localStorage['position-lat'] = $('#lat').val();
+			localStorage['position-lon'] = $('#lon').val();
+
+			//reset caches
+			chrome.extension.sendRequest({ reset: true });
+			cache = [];
+
+			//and do it again
+			getLocation();
+
+			$('#status').text('Opgeslagen!').show();
+			setTimeout(function() {
+				$('#status').hide();
+			}, 3000);
+		});
+	});
+    </script>
+    <style>
+	@import url(http://fonts.googleapis.com/css?family=Droid+Sans);
+
+	body { font: 10pt 'Droid Sans', Helvetica, Verdana, sans-serif; }
+	h1 { border-bottom: 3px solid; }
+	header { text-align: center; }
+	img { vertical-align: middle; }
+
+	#wrapper {
+		margin: 0 auto;
+		width: 600px;
+		overflow: hidden;
+		border: 1px dashed;
+		padding: 10px;
+	}
+
+	#map {
+		height: 400px;
+		width: 600px;
+	}
+
+	#status {
+		background: #ddd;
+		padding: 10px;
+		font-weight: bold;
+	}
+
+	#status { display: none; }
+    </style>
+  </head>
+  <body>
+    <header>
+	  <h1><img src="icon48.png" alt="icon" /> Neerslagalarm</h1>
+    </header>
+    <div id="wrapper">
+      <h2>locatiebepaling</h2>
+      <form>
+        <input type="radio" name="location" id="form-geolocation" value="geolocation" checked="checked" />
+        <label for="form-geolocation">automatisch</label>
+        <input type="radio" name="location" id="form-manual" value="manual" />
+        <label for="form-manual">handmatig</label>
+      </form>
+
+      <div id="manual">
+        <h2>handmatige locatie</h2>
+
+        <div id="map"></div>
+
+        <p><em>Gebruik een lange klik om een locatie te kiezen. Werkt in Nederland, België, Luxemburg en delen van Duitsland.</em></p>
+          <form>
+            <p>lat <input type="text" id="lat" /></p>
+            <p>lon <input type="text" id="lon" /></p>
+          </form>
+      </div>
+
+      <div id="notification">
+        <h2>waarschuwing</h2>
+        <form>
+          <p>
+            <input type="checkbox" id="form-notification" checked="checked" />
+            <label for="form-notification">ingeschakeld (er wordt hooguit één waarschuwing per twee uur gegeven)</label>
+          </p>
+          <p>
+            <p>Waarschuwingsinterval (de lengte van de periode waarin een waarschuwing gegeven moet worden):</p>
+            <select name="notificationInterval">
+              <option value="5">5 min</option>
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60" selected="selected">1 uur (standaard)</option>
+              <option value="120">2 uur</option>
+            </select>
+            <p>Hoeveelheid neerslag (de buien waarvoor een waarschuwing moet worden gegeven):</p>
+            <select name="notificationAmount">
+              <option value="0">Elke druppel</option>
+              <option value="0.5" selected="selected">Lichte neerslag</option>
+              <option value="3">Matige neerslag</option>
+              <option value="12">Zware neerslag</option>
+            </select>
+          </p>
+        </form>
+      </div>
+
+      <div id="badge">
+        <h2>badge</h2>
+          <p>Hoeveelheid neerslag (de buien waarbij de badge actief wordt):</p>
+          <select name="badgeAmount">
+            <option value="0">Elke druppel</option>
+            <option value="0.5" selected="selected">Lichte neerslag</option>
+            <option value="3">Matige neerslag</option>
+            <option value="12">Zware neerslag</option>
+          </select>
+      </div>
+
+      <p><button id="save">Opslaan</button></p>
+      <p id="status"></p>
+    </div>
+  </body>
+</html>
