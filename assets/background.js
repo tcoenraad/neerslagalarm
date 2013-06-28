@@ -4,9 +4,9 @@
   });
 
   $(function() {
-    getLocation();
+    get_location();
 
     setInterval(function() {
-      getLocation();
+      get_location();
     }, 1000 * 60);
   });

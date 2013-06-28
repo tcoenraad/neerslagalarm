@@ -8,8 +8,8 @@ a { color: blue; text-decoration: none }
 img { vertical-align: middle }
 
 #weather { position: absolute; right: 0; top: 0; padding: 8px; }
-#weatherInfo { font-size: 16pt; padding-left: 10px; }
-#weatherInfo, #weatherImg { float: left; }
-#weatherImg { height: 24px; }
+#weather_info { font-size: 16pt; padding-left: 10px; }
+#weather_info, #weather_img { float: left; }
+#weather_img { height: 24px; }
 #chart { width: 450px; }
 #loader { display: none }

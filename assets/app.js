@@ -1,5 +1,5 @@
 var cache = []
-var weatherData;
+var weather_data;
 var lon, lat;
 
 var lastUpdateAt, lastNotificationAt;
@@ -33,10 +33,10 @@ function calcTimes(tijdstip) {
 	t = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hours, minutes);
 
 	//next day fix, for a two hour graph
-	if(hours <= 1 && d.getHours() >= 22) {
+	if (hours <= 1 && d.getHours() >= 22) {
 		t.setTime(t.getTime() + 86400000);
 	}
-	if(hours == 23 && d.getHours() == 0) {
+	if (hours == 23 && d.getHours() == 0) {
 		t.setTime(t.getTime() - 86400000);
 	}
 
@@ -46,7 +46,7 @@ function calcTimes(tijdstip) {
 	minutesToRain = minutesOffset;
 	hoursToRain = 0;
 
-	if(minutesToRain >= 60) {
+	if (minutesToRain >= 60) {
 		hoursToRain = Math.floor(minutesToRain / 60);
 		minutesToRain = minutesToRain - hoursToRain * 60;
 	}
@@ -56,11 +56,11 @@ function calcTimes(tijdstip) {
 
 function wunderground(data) {
 	//caching results
-	if(data) {
+	if (data) {
 		cache['wunderground'] = data;
 	}
 
-  if($(cache['wunderground']).find('display_location').find('city').text()) {
+  if ($(cache['wunderground']).find('display_location').find('city').text()) {
 		$('#location').text($(cache['wunderground']).find('display_location').find('city').text());
 	} else {
 		$('#location').text('onbekend');
@@ -71,69 +71,62 @@ function wunderground(data) {
 
 	//set img
 	src = ($(cache['wunderground']).find('icon').text()) ? weatherImages[$(cache['wunderground']).find('icon').text()] : weatherImages['unknown'];
-	$('#weatherImg').attr('src', 'assets/' + src);
+	$('#weather_img').attr('src', 'assets/' + src);
 }
 
-function buienradar(callback, display, chartData, data) {
+function buienradar(callback, display, chart_data, data) {
 	//caching results
-	if(data) {
+	if (data) {
 		cache['buienradar'] = data;
 	}
 
 	//initialize/reset these values
-	weatherData = {};
-	firstRainAt = null;
-	noRainAt = null;
-	firstRain = null;
-	noRain = null;
-
-  firstRainBadgeAt = null;
-	noRainBadgeAt = null;
-	firstRainBadge = null;
-	noRainBadge = null;
+	weather_data = {};
+	firstRainAt = firstRain = noRainAt = noRain = null;
+  firstRainBadgeAt = firstRainBadge = noRainBadgeAt = noRainBadge = null;
 
 	//split datafeed into array, every single line an entry
-	splitLines = cache['buienradar'].split("\n");
-	splitLines.pop(); //last result is empty
+	weather_raw_data = cache['buienradar'].split("\n");
+	weather_raw_data.pop(); //last result is empty
 
 	//preparing an array with key time and value neerslag
-	$.each(splitLines, function(key, value) {
+	$.each(weather_raw_data, function(key, value) {
 		values = value.split('|');
 		time = values[1];
 
 		neerslag = Math.pow(10, (values[0] - 109) / 32);
 		neerslag = Math.round(neerslag * 10) / 10;
-		weatherData[time] = neerslag; 
+		weather_data[time] = neerslag; 
 	});
 
 	//if it doesn't stop raining, latest value is for badge
   i = 0;
   maxI = 25;
-	for (var prop in weatherData) {
+	for (var prop in weather_data) {
     i++;
 
 		tijdstip = prop;
-		neerslag = weatherData[prop];
+		neerslag = weather_data[prop];
 
 		//skipping empty results, just in case, shouldn't happen
-		if(tijdstip == 'undefined') {
+		if (tijdstip == 'undefined') {
 			continue;
 		}
 
 		//first rain to fall
-		if(neerslag > 0 //it isn't dry
+		if (neerslag > 0 //it isn't dry
 		&& calcTimes(tijdstip)[0] >= -5 //time is now or in the future, not in past
 		&& !firstRainAt) { //not set yet
 			firstRainAt = tijdstip; //this is the firstRain, any further attempt can't be the first
 		}
 
-   	if(neerslag > localStorage['badgeAmount'] //it isn't dry
+   	if (neerslag > localStorage['badgeAmount'] //it isn't dry
 		&& calcTimes(tijdstip)[0] >= -5 //time is now or in the future, not in past
 		&& !firstRainBadgeAt) { //not set yet
 			firstRainBadgeAt = tijdstip; //this is the firstRain, any further attempt can't be the first
 		}
 
-		if(!noRainAt //not set yet
+		if (!noRainAt //not set yet
  		&& firstRainAt //some rain has fallen
 		&&
       ((calcTimes(tijdstip)[0] >= -5 //time is now or in the future, not in past
@@ -144,7 +137,7 @@ function buienradar(callback, display, chartData, data) {
 			noRainAt = tijdstip;
 		}
 
-    if(!noRainBadgeAt //not set yet
+    if (!noRainBadgeAt //not set yet
  		&& firstRainBadgeAt //some rain has fallen
 		&& 
       ((calcTimes(tijdstip)[0] >= -5 //time is now or in the future, not in pasts
@@ -156,35 +149,35 @@ function buienradar(callback, display, chartData, data) {
 		}
 
 		//fill graph
-		if(display) {
-			chartData.addRow([tijdstip, 0.5, 3, 12, neerslag]);
+		if (display) {
+			chart_data.addRow([tijdstip, 0.5, 3, 12, neerslag]);
 		}
 	}
 
-	if(firstRainAt) {
+	if (firstRainAt) {
 		firstRain = calcTimes(firstRainAt);
 	}
-	if(firstRainBadgeAt) {
+	if (firstRainBadgeAt) {
 		firstRainBadge = calcTimes(firstRainBadgeAt);
 	}
-	if(noRainAt) {
+	if (noRainAt) {
 		noRain = calcTimes(noRainAt);
 		noRain[3] = noRain[0] - firstRain[0];
 	}
-	if(noRainBadgeAt) {
+	if (noRainBadgeAt) {
 		noRainBadge = calcTimes(noRainBadgeAt);
 		noRainBadge[3] = noRainBadge[0] - firstRainBadge[0];
 	}
 
-	if(!localStorage['lastNotificationAt']) {
+	if (!localStorage['lastNotificationAt']) {
 		localStorage['lastNotificationAt'] = 0;
 	}
-	if(!localStorage['notificationInterval']) {
+	if (!localStorage['notificationInterval']) {
 		localStorage['notificationInterval'] = 60;
 	}
 
 	//precipation in x minutes and last 60 minutes no notification given
-	if(!display && //not manually invoked
+	if (!display && //not manually invoked
 		localStorage['notification'] //notification enabled
 		&& minutesOffset <= localStorage['notificationInterval'] //interval check
 		&& neerslag >= localStorage['notificationAmount'] //precipation amount check
@@ -203,7 +196,7 @@ function buienradar(callback, display, chartData, data) {
 		}, 10 * 1000);
 	}
 
-	if(firstRain) {
+	if (firstRain) {
 		//shorthands
 		minutesToRain = (firstRain[1] < 0) ? 0 : firstRain[1];
 		hoursToRain = firstRain[2];
@@ -215,17 +208,17 @@ function buienradar(callback, display, chartData, data) {
 		title += minutesToRain + ' ';
 		title += (minutesToRain != 1) ? 'minuten' : 'minuut';
 
-		if(noRain) {
+		if (noRain) {
 			title += (noRain[3]) ? ' (+' + (noRain[3]) + ' m)' : '';
 		}
 	} else {
-		if(display) {
+		if (display) {
 			title = 'geen neerslag verwacht';
 		}
 	}
 
-  if(firstRainBadge) {
-    if(firstRainBadge[1] <= 0 && firstRainBadge[2] == 0) { //raining right now
+  if (firstRainBadge) {
+    if (firstRainBadge[1] <= 0 && firstRainBadge[2] == 0) { //raining right now
 			chrome.browserAction.setBadgeText({text: '+' + noRainBadge[3]});
     } else { //it will rain in some time
       chrome.browserAction.setBadgeText({text: firstRainBadge[0] + 'm'});
@@ -235,22 +228,22 @@ function buienradar(callback, display, chartData, data) {
   }
 
 
-	if(callback) {
+	if (callback) {
 		//and go back
-		callback(title, chartData);
+		callback(title, chart_data);
 	}
 }
 
-//function to callback, option whether data will be displayed, pointer to chartData
-function getLocation(callback, display, chartData) {
+//function to callback, option whether data will be displayed, pointer to chart_data
+function get_location(callback, display, chart_data) {
 	//get location
-	if(localStorage['location'] == 'geolocation' || !localStorage['location']) {
+	if (localStorage['location'] == 'geolocation' || !localStorage['location']) {
 		navigator.geolocation.getCurrentPosition( //async
 			function (position) {
 				lat = position.coords.latitude;
 				lon = position.coords.longitude;
 
-				updateWeatherData(callback, display, chartData);
+				get_weather_data(callback, display, chart_data);
 			}
 		);
 	}
@@ -258,29 +251,28 @@ function getLocation(callback, display, chartData) {
 		lat = localStorage['position-lat'];
 		lon = localStorage['position-lon'];
 
-		updateWeatherData(callback, display, chartData);
+		get_weather_data(callback, display, chart_data);
 	}
 }
 
-//function to callback, option to display, pointer to chartData
-function updateWeatherData(callback, display, chartData) {
+//function to callback, option to display, pointer to chart_data
+function get_weather_data(callback, display, chart_data) {
 	//update if last update was x minutes ago
 	forceUpdate = (!cache['buienradar'] || Date.now() - localStorage['lastUpdateAt'] > 1000 * 60 * 5) ? true : false;
 
 	//lat, lon in global
-	if(forceUpdate) {
+	if (forceUpdate) {
 		//set lastUpdateAt time to this moment
 		localStorage['lastUpdateAt'] = Date.now();
 
-		if(display) {
+		if (display) {
 			$.get('http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=' + lat + ',' + lon, function(data) { wunderground(data) });
 		}
-		$.get('http://gps.buienradar.nl/getrr.php?lat=' + lat + '&lon=' + lon, function(data) { buienradar(callback, display, chartData, data) });
+		$.get('http://gps.buienradar.nl/getrr.php?lat=' + lat + '&lon=' + lon, function(data) { buienradar(callback, display, chart_data, data) });
 	} else {
-		if(display) {
-			geocode();
+		if (display) {
 			wunderground();
 		}
-		buienradar(callback, display, chartData);
+		buienradar(callback, display, chart_data);
 	}
 }

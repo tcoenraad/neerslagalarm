@@ -1,7 +1,7 @@
   var previousMarker, t, map;
 
   function setNewMarker(position, map) {
-    if(previousMarker) {
+    if (previousMarker) {
       previousMarker.setMap(null);
     }
 
@@ -24,7 +24,7 @@
     map = new google.maps.Map(document.getElementById('map'), options);
 
     //restore saved marker
-    if(localStorage['position-lat']) {
+    if (localStorage['position-lat']) {
       setNewMarker([localStorage['position-lat'], localStorage['position-lon']], map);
       map.setCenter(new google.maps.LatLng(localStorage['position-lat'], localStorage['position-lon']));
     }
@@ -43,38 +43,36 @@
     );
 
     //restore saved states
-    if(localStorage['location'] == 'manual') {
+    if (localStorage['location'] == 'manual') {
       $('input[name=location]:eq(1)').attr('checked', true);
     }
-    if(localStorage['notification'] == 'false') { //localstorage makes this a string, shortest fix
+    if (localStorage['notification'] == 'false') { //localstorage makes this a string, shortest fix
       $('#form-notification').attr('checked', false);
     }
-    if(localStorage['notificationInterval']) {
+    if (localStorage['notificationInterval']) {
       $('select[name=notificationInterval] [value="' + localStorage['notificationInterval'] + '"]').attr('selected', true);
     }
-    if(localStorage['notificationAmount']) {
+    if (localStorage['notificationAmount']) {
       $('select[name=notificationAmount] [value="' + localStorage['notificationAmount'] + '"]').attr('selected', true);
     }
-    if(localStorage['badgeAmount']) {
+    if (localStorage['badgeAmount']) {
       $('select[name=badgeAmount] [value="' + localStorage['badgeAmount'] + '"]').attr('selected', true);
     }
 
     //restore geo values
-    if(localStorage['position-lat']) {
+    if (localStorage['position-lat']) {
       $('#lat').val(localStorage['position-lat']);
       $('#lon').val(localStorage['position-lon']);
     }
 
     google.maps.event.addDomListener(map, 'mousedown', function(e) {
       t = setTimeout(function(){
-        //fill those forms
         lat = e.latLng.lat();
         lon = e.latLng.lng(); //lng, not lon
 
         $('#lat').val(lat);
         $('#lon').val(lon);
 
-        //give a visible respons
         setNewMarker([lat, lon], map);
         map.panTo(new google.maps.LatLng(lat, lon));
       }, 500);
@@ -99,7 +97,7 @@
       cache = [];
 
       //and do it again
-      getLocation();
+      get_location();
 
       $('#status').text('Opgeslagen!').show();
       setTimeout(function() {

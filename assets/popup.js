@@ -1,22 +1,20 @@
   chrome.extension.sendRequest({ reset: true });
 
-  function displayWeatherPrepare() {
-    //visual feedback
+  function setup_graph() {
     $('#loader').show();
 
-    chartData = new google.visualization.DataTable();
+    chart_data = new google.visualization.DataTable();
 
-    chartData.addColumn('string', 'datetime');
-    chartData.addColumn('number', 'lichte neerslag');
-    chartData.addColumn('number', 'matige neerslag');
-    chartData.addColumn('number', 'zware neerslag');
-    chartData.addColumn('number', 'mm/u');
+    chart_data.addColumn('string', 'datetime');
+    chart_data.addColumn('number', 'lichte neerslag');
+    chart_data.addColumn('number', 'matige neerslag');
+    chart_data.addColumn('number', 'zware neerslag');
+    chart_data.addColumn('number', 'mm/u');
 
-    getLocation(displayWeather, true, chartData);
+    get_location(fill_graph, true, chart_data);
   }
 
-  function displayWeather(title, chartData) {
-    //set forecast
+  function fill_graph(title, chart_data) {
     $('#title').text(title);
   
     options = {
@@ -34,30 +32,28 @@
     };
 
     chart = new google.visualization.AreaChart(document.getElementById('chart'));
-    chart.draw(chartData, options);
+    chart.draw(chart_data, options);
 
     d = new Date(parseInt(localStorage['lastUpdateAt']));
     leadingZeroHours = (d.getHours() < 9) ? '0' : '';
     leadingZeroMin = (d.getMinutes() < 9) ? '0' : '';
     $('#refresh').text('laatste update: '+ leadingZeroHours + d.getHours() + ':' + leadingZeroMin + d.getMinutes()); 
 
-    //end visual feedback
     $('#loader').hide();
   }
 
   google.load('visualization', '1.0', { 'packages': ['corechart']} );
   google.setOnLoadCallback(function() {
     $(function() {
-      displayWeatherPrepare();
+      setup_graph();
 
       $('#refresh').click(function(e){
         e.preventDefault();
-        displayWeatherPrepare();
+        setup_graph();
       });
 
       setInterval(function() {
-        displayWeatherPrepare();
+        setup_graph();
       }, 1000 * 60);
     });
   });
-  
