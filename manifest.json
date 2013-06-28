@@ -10,13 +10,18 @@
 		"128": "icon128.png"
 	},
 
-	"background_page": "background.html",
+	"background": "background.html",
 	"browser_action": {
 		"default_icon": "icon48.png",
-		"popup": "popup.html"
+		"default_popup": "popup.html"
 	},
 
+	"manifest_version": 2,
+
 	"options_page": "options.html",
+
+	"content_security_policy": "script-src 'self' 'unsafe-eval' https://www.google.com https://maps.googleapis.com https://maps.gstatic.com; object-src 'self'",
+
 	"permissions": [
 		"http://gps.buienradar.nl/*",
 		"http://api.wunderground.com/*",

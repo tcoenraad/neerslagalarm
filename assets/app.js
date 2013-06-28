@@ -54,33 +54,16 @@ function calcTimes(tijdstip) {
 	return [ minutesOffset, minutesToRain, hoursToRain ];
 }
 
-function geocode(data) {
-	//caching results
-	if(data) {
-		cache['geocode'] = data;
-	}
-
-	if(cache['geocode']['status'] != 'ZERO_RESULTS') {
-		//making sure a city name is displayed
-		i = 0;
-		while(cache['geocode']['results'][0]['address_components'][i]['types'][0] != 'locality') {
-			i++;
-
-			//there's probably some error
-			if(i > 10) {
-				break;
-			}
-		}
-		$('#location').text(cache['geocode']['results'][0]['address_components'][i]['long_name']);
-	} else {
-		$('#location').text('onbekend');
-	}
-}
-
 function wunderground(data) {
 	//caching results
 	if(data) {
 		cache['wunderground'] = data;
+	}
+
+  if($(cache['wunderground']).find('display_location').find('city').text()) {
+		$('#location').text($(cache['wunderground']).find('display_location').find('city').text());
+	} else {
+		$('#location').text('onbekend');
 	}
 
 	//set temp
@@ -193,11 +176,9 @@ function buienradar(callback, display, chartData, data) {
 		noRainBadge[3] = noRainBadge[0] - firstRainBadge[0];
 	}
 
-	//make sure this is a number
 	if(!localStorage['lastNotificationAt']) {
 		localStorage['lastNotificationAt'] = 0;
 	}
-	//set default interval if not set
 	if(!localStorage['notificationInterval']) {
 		localStorage['notificationInterval'] = 60;
 	}
@@ -292,7 +273,6 @@ function updateWeatherData(callback, display, chartData) {
 		localStorage['lastUpdateAt'] = Date.now();
 
 		if(display) {
-			$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + lat + ',' + lon + '&sensor=false', function(data) { geocode(data) });
 			$.get('http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=' + lat + ',' + lon, function(data) { wunderground(data) });
 		}
 		$.get('http://gps.buienradar.nl/getrr.php?lat=' + lat + '&lon=' + lon, function(data) { buienradar(callback, display, chartData, data) });

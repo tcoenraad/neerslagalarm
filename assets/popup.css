@@ -1,0 +1,15 @@
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans);
+
+body { background: #f0f0f0; font: 8pt "Droid Sans"; margin: 8px; }
+h1 { font: bold 10pt "Droid Sans" }
+h2 { font: 8pt "Droid Sans"; text-align: center; margin: 0 }
+
+a { color: blue; text-decoration: none }
+img { vertical-align: middle }
+
+#weather { position: absolute; right: 0; top: 0; padding: 8px; }
+#weatherInfo { font-size: 16pt; padding-left: 10px; }
+#weatherInfo, #weatherImg { float: left; }
+#weatherImg { height: 24px; }
+#chart { width: 450px; }
+#loader { display: none }

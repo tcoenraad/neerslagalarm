@@ -1,0 +1,27 @@
+  @import url(http://fonts.googleapis.com/css?family=Droid+Sans);
+
+  body { font: 10pt 'Droid Sans', Helvetica, Verdana, sans-serif; }
+  h1 { border-bottom: 3px solid; }
+  header { text-align: center; }
+  img { vertical-align: middle; }
+
+  #wrapper {
+    margin: 0 auto;
+    width: 600px;
+    overflow: hidden;
+    border: 1px dashed;
+    padding: 10px;
+  }
+
+  #map {
+    height: 400px;
+    width: 600px;
+  }
+
+  #status {
+    background: #ddd;
+    padding: 10px;
+    font-weight: bold;
+  }
+
+  #status { display: none; }

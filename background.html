@@ -6,20 +6,6 @@
     <script src="https://www.google.com/jsapi"></script>
     <script src="assets/jquery-1.6.4.min.js"></script>
     <script src="assets/app.js"></script>
-
-    <script>
-	chrome.extension.onRequest.addListener(
-		function() {
-			cache = [];
-	});
-
-	$(function() {
-		getLocation();
-
-		setInterval(function() {
-			getLocation();
-		}, 1000 * 60);
-	});
-	  </script>
+    <script src="assets/background.js"></script>
   </head>
 </html>
